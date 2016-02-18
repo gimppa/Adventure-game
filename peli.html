@@ -27,10 +27,10 @@
 			room += 1;
 			lastmessage = "You go to the next room. A monster attacks you. You lose " + random + " HP."
 			newitems = [];
-			if (Math.random() >= 0.95) {
+			if (Math.random() >= 0.80) {
 				newitems.push("Potion");
 			}
-			if ( room >= 15 && Math.random() >= 0.99) {
+			if ( room >= 15 && Math.random() >= 0.95) {
 				newitems.push("Treasure");
 			}
 			if (newitems.length > 0) {additems(newitems);}
@@ -76,6 +76,7 @@
 					}
 				}
 				
+				
 				$("#health").text(hp);
 				$("#day").text(day);
 				
@@ -95,6 +96,10 @@
 			$("#usepotion").click(function () {
 				if (day != lastpotionused) {
 					items["Potion"] -= 1;
+					if (hp > 50) {
+						lastmessage = "You used an potion to restore " +  + " HP";
+						hp=100;
+					}
 					hp += 50;
 					lastmessage = "You used an potion to restore 50 HP";
 					lastpotionused = day;
@@ -131,6 +136,15 @@
 		}
 		
 		$("submit_score").click(function () { submit(); });
+		
+		var message =  {
+			messageType: "SETTING",
+			options: {
+				"width": 800, //Integer
+				"height": 600 //Integer
+			}
+		};
+		window.parent.postMessage(message, "*");
 	});
 	
 	</script>
