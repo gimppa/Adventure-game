@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+	<title>Adventure game</title>
+	<script src="http://code.jquery.com/jquery-1.11.1.min.js"></script>
+	<script>
+	
+	$(document).ready(function () {	
+	
+		var items = {};
+		var day = 0;
+		var hp = 100;
+		var room = 0;
+		var lastmessage = "";
+		var lastpotionused = 0;
+		var score = 0;
+		var gameover = 0;
+		var treasurefound = 0;
+		
+		
+		$("#forward").click(function () {
+			update();
+			random = Math.round(Math.random()*10);
+			hp -= random;
+			day += 1;
+			room += 1;
+			lastmessage = "You go to the next room. A monster attacks you. You lose " + random + " HP."
+			newitems = [];
+			if (Math.random() >= 0.95) {
+				newitems.push("Potion");
+			}
+			if ( room >= 15 && Math.random() >= 0.99) {
+				newitems.push("Treasure");
+			}
+			if (newitems.length > 0) {additems(newitems);}
+			update();
+		});
+		
+		$("#rest").click(function () {
+			lastmessage = "You rest for a day and restore 5 HP";
+			day += 1;
+			hp += 5;
+			update();
+		});
+		
+		
+		function additems(list) {
+			//Adds objects from the list to the item dictionary and gives a nice message
+			lastmessage += "<br>You found new items:"
+			for (var i = list.length - 1; i >= 0; i--) {
+				if (!(list[i] in items)) {items[list[i]] = 0;}
+				items[list[i]] += 1;
+				lastmessage += " " + list[i];
+			}
+		}
+		
+		function update() {
+			if (gameover == 1) {}
+			else {
+				$("#item_list").html("");
+				for (var key in items) {
+				
+					if (items[key] > 0) {
+						strtoappend = "<li>" + key + " : "+items[key]+ "</li>";
+						
+						if (key == "Potion") {
+							strtoappend += "<button id='usepotion' title='Heals 50 HP'>Use</button>";
+						}
+						if (key == "Treasure") {
+							strtoappend += "<button id='usetreasure' title='Use this to win the game'>Use</button>";
+						}
+						$("#item_list").append(strtoappend);
+						potionbutton();
+						treasurebutton();
+					}
+				}
+				
+				$("#health").text(hp);
+				$("#day").text(day);
+				
+				$("#msg").html("");
+				$("#msg").append(lastmessage)
+				if (hp <= 0) {
+					//Game over, call game over function
+					$("#msg").append("Game over")
+					gameover = 1;
+				}
+				score = hp*treasurefound - day + treasurefound*400;
+				$("#score").text(score);
+			}
+		}
+		
+		function potionbutton () {
+			$("#usepotion").click(function () {
+				if (day != lastpotionused) {
+					items["Potion"] -= 1;
+					hp += 50;
+					lastmessage = "You used an potion to restore 50 HP";
+					lastpotionused = day;
+					update();
+				}
+			});
+		}
+		
+		function treasurebutton () {
+			$("#usetreasure").click(function () {
+				lastmessage = "You win";
+				treasurefound = 1;
+				update();
+				//call game over function
+			});
+		}
+		
+		function gameover() {
+			//game over function
+			gameover = 1;
+		}
+		
+		
+		
+		///Game functionalities end here ///
+		///Utility functionalities start here///
+		
+		
+		function submit() {
+			var msg = {
+				"messageType":"SCORE",
+				"score": score};
+			window.parent.postMessage(msg,"*");
+		}
+		
+		$("submit_score").click(function () { submit(); });
+	});
+	
+	</script>
+</head>
+<body>
+	<h5>Insturctions: find the treasure as fast as possible, without dying.</h5>
+	<h5>Rumors say the treasure lies somewhere behind the 15th room.</h5>
+	<h5>Better hurry, you lose points every day!</h5>
+	<h5>Tip: you can only use one potion per day..</h5>
+
+	<button id="forward">Go forth</button>
+	<button id="rest">Rest</button>
+	
+	<h3>Items</h3>
+	<ul id="item_list"></ul>
+	<div><span id="health">100</span> HP left</div>
+	<div>DAY <span id="day">0</span></div>
+	<div>Score: <span id="score">0</span></div>
+	<div><span id="msg"></span></div>
+	
+	<button id="submit_score">Submit score</button>
+
+</body>
+</html>
